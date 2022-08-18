@@ -5,6 +5,22 @@ pub enum Direction {
     Up(i32),
 }
 
+impl Direction {
+    fn from_command(command_string: &str) -> Direction {
+        let mut split = command_string.trim().splitn(2, " ");
+
+        let dir = split.next().unwrap();
+        let num: i32 = split.next().unwrap().parse().unwrap();
+
+        match dir {
+            "forward" => Direction::Forward(num),
+            "down" => Direction::Down(num),
+            "up" => Direction::Up(num),
+            &_ => panic!("invalid direction"),
+        }
+    }
+}
+
 #[derive(Debug)]
 struct Position {
     depth: i32,
@@ -44,20 +60,7 @@ impl Position {
 
 #[aoc_generator(day2)]
 pub fn parse(input: &str) -> Vec<Direction> {
-    input
-        .lines()
-        .map(|x| x.trim().splitn(2, " "))
-        .map(|mut x| {
-            let dir = x.next().unwrap();
-            let num: i32 = x.next().unwrap().parse().unwrap();
-            match dir {
-                "forward" => Direction::Forward(num),
-                "down" => Direction::Down(num),
-                "up" => Direction::Up(num),
-                &_ => panic!("invalid direction"),
-            }
-        })
-        .collect()
+    input.lines().map(|x| Direction::from_command(x)).collect()
 }
 
 #[aoc(day2, part1)]
