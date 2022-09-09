@@ -1,6 +1,5 @@
-use std::{clone, vec};
-
 use grid::Grid;
+use std::{collections::VecDeque, vec};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 struct BingoField {
@@ -25,6 +24,7 @@ impl BingoField {
     }
 }
 
+#[derive(PartialEq)]
 pub enum BingoResult {
     Row(usize),
     Column(usize),
@@ -47,13 +47,13 @@ impl BingoBoard {
     }
 
     fn bingo(&self) -> BingoResult {
-        for row in (0..self.board.rows()) {
+        for row in 0..self.board.rows() {
             if self.board.iter_row(row).all(|x| x.checked()) {
                 return BingoResult::Row(row);
             }
         }
 
-        for col in (0..self.board.cols()) {
+        for col in 0..self.board.cols() {
             if self.board.iter_col(col).all(|x| x.checked()) {
                 return BingoResult::Column(col);
             }
@@ -86,19 +86,76 @@ impl BingoBoard {
         );
         BingoBoard { board: board }
     }
+
+    fn sum_unchecked(&self) -> i32 {
+        self.board
+            .iter()
+            .filter(|x| !x.checked())
+            .map(|x| x.number)
+            .sum()
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct BingoInput {
-    numbers: Vec<i32>,
+    numbers: VecDeque<i32>,
     bingo_boards: Vec<BingoBoard>,
+}
+
+impl BingoInput {
+    fn get_winner_iter(&self) -> BingoWinnerIter {
+        BingoWinnerIter {
+            bingo_input: self.clone(),
+        }
+    }
+}
+
+struct BingoWinnerIter {
+    bingo_input: BingoInput,
+}
+
+impl Iterator for BingoWinnerIter {
+    type Item = (i32, Vec<BingoBoard>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if self.bingo_input.bingo_boards.is_empty() {
+                return None;
+            }
+
+            if let Some(num) = self.bingo_input.numbers.pop_front() {
+                for board in self.bingo_input.bingo_boards.iter_mut() {
+                    board.check(num);
+                }
+
+                let mut winner_boards: Vec<BingoBoard> = Vec::new();
+                let mut i = 0;
+
+                while i < self.bingo_input.bingo_boards.len() {
+                    if let BingoResult::Column(_) | BingoResult::Row(_) =
+                        self.bingo_input.bingo_boards[i].bingo()
+                    {
+                        winner_boards.push(self.bingo_input.bingo_boards.remove(i));
+                    } else {
+                        i += 1;
+                    }
+                }
+
+                if !winner_boards.is_empty() {
+                    return Some((num, winner_boards));
+                }
+            } else {
+                return None;
+            }
+        }
+    }
 }
 
 #[aoc_generator(day4)]
 pub fn parse(input: &str) -> BingoInput {
     let mut line_iter = input.lines();
 
-    let numbers: Vec<i32> = line_iter
+    let numbers: VecDeque<i32> = line_iter
         .next()
         .unwrap()
         .trim()
@@ -130,34 +187,26 @@ pub fn parse(input: &str) -> BingoInput {
 
 #[aoc(day4, part1)]
 pub fn part1(input: &BingoInput) -> i32 {
-    let mut mut_input = (*input).clone();
+    let mut winner_iter = input.get_winner_iter();
 
-    for num in input.numbers.iter() {
-        for board in mut_input.bingo_boards.iter_mut() {
-            board.check(*num);
-            let bingo = match board.bingo() {
-                BingoResult::NoBingo => None,
-                _ => {
-                    let sum: i32 = board
-                        .board
-                        .iter()
-                        .filter(|x| !x.checked())
-                        .map(|x| x.number)
-                        .sum();
-                    Some(num * sum)
-                }
-            };
-            if bingo.is_some() {
-                return bingo.unwrap();
-            }
-        }
+    if let Some((winning_number, boards)) = winner_iter.next() {
+        assert_eq!(1, boards.len());
+        boards[0].sum_unchecked() * winning_number
+    } else {
+        -1
     }
-    0
 }
 
 #[aoc(day4, part2)]
-pub fn part2(input: &BingoInput) -> usize {
-    0
+pub fn part2(input: &BingoInput) -> i32 {
+    let winner_iter = input.get_winner_iter();
+
+    if let Some((winning_number, boards)) = winner_iter.last() {
+        assert_eq!(1, boards.len());
+        boards[0].sum_unchecked() * winning_number
+    } else {
+        -1
+    }
 }
 
 #[cfg(test)]
@@ -188,10 +237,10 @@ mod tests {
     #[test]
     fn test_parse() {
         let expected = BingoInput {
-            numbers: vec![
+            numbers: VecDeque::from(vec![
                 7, 4, 9, 5, 11, 17, 23, 2, 0, 14, 21, 24, 10, 16, 13, 6, 15, 25, 12, 22, 18, 20, 8,
                 19, 3, 26, 1,
-            ],
+            ]),
             bingo_boards: vec![
                 BingoBoard::new(grid::grid![
                 [22, 13, 17, 11,  0]
@@ -226,6 +275,6 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        assert_eq!(1, part2(&parse(TEST_INPUT)));
+        assert_eq!(1924, part2(&parse(TEST_INPUT)));
     }
 }
