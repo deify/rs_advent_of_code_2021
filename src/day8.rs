@@ -113,7 +113,7 @@ impl SignalNote {
         // delete fives from original signal_pattern
         signal_pattern.retain(|x| !fives.iter().any(|y| y == x));
 
-        // 3 has 3 elements in common with 7
+        // THREE has 3 elements in common with SEVEN
         if let Some(index) = fives
             .iter()
             .position(|x| x.common_elements(pattern[7].as_ref().unwrap()) == 3)
@@ -121,7 +121,7 @@ impl SignalNote {
             pattern[3] = Some(fives.swap_remove(index));
         }
 
-        // 5 has 3 elements in common with 4
+        // FIVE has 3 elements in common with FOUR
         if let Some(index) = fives
             .iter()
             .position(|x| x.common_elements(pattern[4].as_ref().unwrap()) == 3)
@@ -129,12 +129,12 @@ impl SignalNote {
             pattern[5] = Some(fives.swap_remove(index));
         }
 
-        // only 2 left in fives
+        // only TWO left in fives
         assert_eq!(fives.len(), 1);
         pattern[2] = Some(fives.swap_remove(0));
 
-        // now signal_pattern only contains elements with len 6 which are 0, 6 and 9
-        // 9 has 3 elements in common with 7 and 5 elements in common with 5
+        // now signal_pattern only contains elements with len 6 which are ZERO, SIX and NINE
+        // NINE has 3 elements in common with SEVEN and 5 elements in common with FIVE
         if let Some(index) = signal_pattern.iter().position(|x| {
             x.common_elements(pattern[7].as_ref().unwrap()) == 3
                 && x.common_elements(pattern[5].as_ref().unwrap()) == 5
@@ -142,7 +142,7 @@ impl SignalNote {
             pattern[9] = Some(signal_pattern.swap_remove(index));
         }
 
-        // 6 has 5 elements in common with 5, 0 only 4
+        // SIX has 5 elements in common with FIVE, ZERO only 4
         if let Some(index) = signal_pattern
             .iter()
             .position(|x| x.common_elements(pattern[5].as_ref().unwrap()) == 5)
@@ -150,20 +150,23 @@ impl SignalNote {
             pattern[6] = Some(signal_pattern.swap_remove(index));
         }
 
+        // only ZERO is left
         assert_eq!(signal_pattern.len(), 1);
         pattern[0] = Some(signal_pattern.swap_remove(0));
 
+        // map the output to the corresponding patterns by retrieveing their array position
         self.output
             .iter()
             .map(|x| {
+                // get the position of each pattern to retrieve the number
                 pattern
                     .iter()
                     .position(|y| *y.as_ref().unwrap() == *x)
                     .unwrap()
-                    .to_string()
+                    .to_string() // and make them strings
             })
             .join("")
-            .parse()
+            .parse() // join stringified numbers and parse as usize
             .unwrap()
     }
 }
