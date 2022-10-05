@@ -18,7 +18,7 @@ impl BingoField {
 
     fn new(number: i32) -> BingoField {
         BingoField {
-            number: number,
+            number,
             checked: false,
         }
     }
@@ -39,13 +39,6 @@ pub struct BingoBoard {
 }
 
 impl BingoBoard {
-    fn check(&mut self, number: i32) {
-        match self.board.iter_mut().find(|x| x.number == number) {
-            Some(x) => x.check(),
-            None => {}
-        }
-    }
-
     fn bingo(&self) -> BingoResult {
         for row in 0..self.board.rows() {
             if self.board.iter_row(row).all(|x| x.checked()) {
@@ -60,6 +53,13 @@ impl BingoBoard {
         }
 
         BingoResult::NoBingo
+    }
+
+    fn check(&mut self, number: i32) {
+        match self.board.iter_mut().find(|x| x.number == number) {
+            Some(x) => x.check(),
+            None => {}
+        }
     }
 
     fn from_str(str: &str, board_size: usize) -> BingoBoard {
@@ -79,12 +79,13 @@ impl BingoBoard {
         BingoBoard { board: grid }
     }
 
+    #[allow(dead_code)]
     fn new(grid: Grid<i32>) -> BingoBoard {
         let board = Grid::from_vec(
             grid.iter().map(|x| BingoField::new(*x)).collect(),
             grid.cols(),
         );
-        BingoBoard { board: board }
+        BingoBoard { board }
     }
 
     fn sum_unchecked(&self) -> i32 {
@@ -180,7 +181,7 @@ pub fn parse(input: &str) -> BingoInput {
     }
 
     BingoInput {
-        numbers: numbers,
+        numbers,
         bingo_boards: boards,
     }
 }

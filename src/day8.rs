@@ -1,19 +1,18 @@
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::convert::From;
-use std::ffi::OsString;
 use std::hash::{Hash, Hasher};
 
-const ZERO: &str = "abcefg";
+const _ZERO: &str = "abcefg";
 const ONE: &str = "cf";
-const TWO: &str = "acdeg";
-const THREE: &str = "acdfg";
+const _TWO: &str = "acdeg";
+const _THREE: &str = "acdfg";
 const FOUR: &str = "bcdf";
-const FIVE: &str = "abdfg";
-const SIX: &str = "abdefg";
+const _FIVE: &str = "abdfg";
+const _SIX: &str = "abdefg";
 const SEVEN: &str = "acf";
 const EIGHT: &str = "abcdefg";
-const NINE: &str = "abcdfg";
+const _NINE: &str = "abcdfg";
 
 #[derive(Debug, Clone)]
 pub struct Pattern(String);

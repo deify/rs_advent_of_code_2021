@@ -9,6 +9,7 @@ pub struct Point {
 }
 
 impl Point {
+    #[allow(dead_code)]
     fn new(x: i32, y: i32) -> Self {
         Self { x, y }
     }
@@ -95,6 +96,7 @@ impl Iterator for LinePointIter {
 }
 
 impl Line {
+    #[allow(dead_code)]
     fn new(start: Point, end: Point) -> Self {
         Self { start, end }
     }
@@ -154,7 +156,7 @@ pub fn part1(input: &[Line]) -> usize {
     for line in lines {
         map.draw_line(line);
     }
-    map.0.iter().filter(|(k, v)| **v > 1).count()
+    map.0.iter().filter(|(_k, v)| **v > 1).count()
 }
 
 #[aoc(day5, part2)]
@@ -164,7 +166,7 @@ pub fn part2(input: &[Line]) -> usize {
     for line in input {
         map.draw_line(line);
     }
-    map.0.iter().filter(|(k, v)| **v > 1).count()
+    map.0.iter().filter(|(_k, v)| **v > 1).count()
 }
 
 #[cfg(test)]
